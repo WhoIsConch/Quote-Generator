@@ -1,4 +1,5 @@
 .env
 output/*
 !output/.gitkeep
-.idea/
+!/.idea/
+!/.mypy_cache/
