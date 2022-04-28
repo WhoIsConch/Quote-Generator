@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import requests
 
 import dotenv
@@ -22,6 +24,8 @@ class QuoteGenerator:
         self.BASE = 'https://api.unsplash.com/photos'
         self.ww = ww.RandomSentence()
         self.eg = eg.DocumentGenerator()
+        self.text: str = ""
+        self.path: str = ""
 
     @property
     def headers(self):
@@ -31,9 +35,9 @@ class QuoteGenerator:
 
     @staticmethod
     def get_random_font(size) -> ImageFont.FreeTypeFont:
-        font_path = random.choice(os.listdir(os.path.join(os.path.dirname(__file__), 'fonts')))
+        font_path = random.choice(os.listdir(os.path.join(os.path.dirname(__file__), '../fonts')))
 
-        return ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'fonts/', font_path), size=size)
+        return ImageFont.truetype(os.path.join(os.path.dirname(__file__), '../fonts/', font_path), size=size)
 
     @staticmethod
     def get_wrapped_text(text: str, font: ImageFont.FreeTypeFont,
@@ -77,7 +81,7 @@ class QuoteGenerator:
         return Image.open(BytesIO(resp.content))
 
     @classmethod
-    def generate_quote(cls) -> str:
+    def generate_quote(cls) -> "QuoteGenerator":
         gen = cls()
 
         gen.logger.info("Generating quote")
@@ -94,7 +98,6 @@ class QuoteGenerator:
 
         draw = ImageDraw.Draw(photo)
         font = gen.get_random_font(int(height / 10))
-        print(font.size)
         text = gen.get_wrapped_text(quote, font, width / 1.1)
 
         draw.text(
@@ -108,15 +111,19 @@ class QuoteGenerator:
         )
 
         gen.logger.info("Saving image...")
-        path = os.path.join(os.path.dirname(__file__), 'output/', f'{quote[:10].strip()}.jpg')
+        path = os.path.join(os.path.dirname(__file__), '../output/', f'{quote[:10].strip()}.jpg')
         photo.save(path)
 
         gen.logger.info("Done!")
-        return path
+
+        gen.path = path
+        gen.text = quote
+
+        return gen
 
 
 if __name__ == "__main__":
     print("Generating quote...")
     img = QuoteGenerator.generate_quote()
     print("Done!")
-    print(img)
+    print(img.path)
