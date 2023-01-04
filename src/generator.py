@@ -12,6 +12,7 @@ import essential_generators as eg
 import wonderwords as ww
 import logging
 import openai
+import shortuuid
 
 dotenv.load_dotenv()
 
@@ -23,10 +24,11 @@ class AIGenerator:
     def generate_quote(self):
         quote = openai.Completion.create(
             model="text-davinci-003",
-            prompt="Generate an inspirational quote.",
+            prompt="Generate an inspirational quote. Do not include quotation marks or authors.",
             temperature=1,
-            max_tokens=10
         )
+
+        print(quote['choices'][0]['text'])
 
         return quote['choices'][0]['text']
 
@@ -134,7 +136,7 @@ class QuoteGenerator:
         )
 
         gen.logger.info("Saving image...")
-        path = os.path.join(os.path.dirname(__file__), '../output/', f'{quote[:10].strip()}.jpg')
+        path = os.getcwd() + f'\\output\\quote-{shortuuid.random(6)}.jpg'
         photo.save(path)
 
         gen.logger.info("Done!")

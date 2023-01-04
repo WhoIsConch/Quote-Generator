@@ -5,3 +5,4 @@ essential-generators~=1.0
 Pillow~=9.1.0
 tweepy~=4.8.0
 openai
+shortuuid
