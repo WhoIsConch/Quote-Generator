@@ -11,19 +11,39 @@ import random
 import essential_generators as eg
 import wonderwords as ww
 import logging
+import openai
 
 dotenv.load_dotenv()
 
 
-class QuoteGenerator:
+class AIGenerator:
     def __init__(self):
+        openai.api_key = os.getenv("OPENAI_TOKEN")
+    
+    def generate_quote(self):
+        quote = openai.Completion.create(
+            model="text-davinci-003",
+            prompt="Generate an inspirational quote.",
+            temperature=1,
+            max_tokens=10
+        )
+
+        return quote['choices'][0]['text']
+
+
+class QuoteGenerator:
+    def __init__(self, from_ai: bool):
+        self.from_ai = from_ai
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         self.access = os.getenv("ACCESS")
         self.secret = os.getenv("SECRET")
         self.BASE = 'https://api.unsplash.com/photos'
-        self.ww = ww.RandomSentence()
-        self.eg = eg.DocumentGenerator()
+        if from_ai:
+            self.ai = AIGenerator()
+        else:
+            self.ww = ww.RandomSentence()
+            self.eg = eg.DocumentGenerator()
         self.text: str = ""
         self.path: str = ""
 
@@ -52,6 +72,9 @@ class QuoteGenerator:
         return '\n'.join(lines)
 
     def get_quote(self) -> str:
+        if self.from_ai:
+            return self.ai.generate_quote()
+
         def get_from_api():
             resp = requests.get("https://randomwordgenerator.com/json/sentences.json")
             if resp.status_code == 200:
@@ -82,7 +105,7 @@ class QuoteGenerator:
 
     @classmethod
     def generate_quote(cls) -> "QuoteGenerator":
-        gen = cls()
+        gen = cls(True)
 
         gen.logger.info("Generating quote")
 
